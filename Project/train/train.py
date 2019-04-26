@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 import torch.optim as optim
 import torch.utils.data
+import torch.nn as nn
 
 from model import LSTMClassifier
 
@@ -68,8 +69,35 @@ def train(model, train_loader, epochs, optimizer, loss_fn, device):
     """
     
     # TODO: Paste the train() method developed in the notebook here.
-
-    pass
+    counter = 0
+    print_every = 100
+    clip=5 # gradient clipping
+    
+    for epoch in range(1, epochs + 1):
+        model.train()
+        total_loss = 0
+        for batch in train_loader:         
+            batch_X, batch_y = batch
+            
+            batch_X = batch_X.to(device)
+            batch_y = batch_y.to(device)
+            
+            # TODO: Complete this train method to train the model provided.
+            model.zero_grad()
+            
+            output = model(batch_X)
+            loss = loss_fn(output.squeeze(), batch_y.float())
+            loss.backward()
+            
+            nn.utils.clip_grad_norm_(model.parameters(), clip)
+            optimizer.step()
+            
+            print("Epoch: {}/{}...".format(epoch, epochs),
+                  "Step: {}...".format(counter),
+                  "Loss: {:.6f}...".format(loss.data.item()))
+            
+            total_loss += loss.data.item()
+        print("Epoch: {}, BCELoss: {}".format(epoch, total_loss / len(train_loader)))
 
 
 if __name__ == '__main__':
